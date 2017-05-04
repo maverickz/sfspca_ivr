@@ -2,7 +2,7 @@
 
 from flask import Flask, request, redirect
 from pprint import pprint
-from twilio.rest import TwilioRestClient
+from twilio.rest import Client
 from datetime import date, datetime
 from twilio.twiml.voice_response import VoiceResponse
 import twilio.twiml
@@ -21,7 +21,7 @@ ACCOUNT_SID = os.getenv("ACCOUNT_SID", "")
 AUTH_TOKEN = os.getenv("AUTH_TOKEN", "")
 S3_BUCKET = "sfspca-ivr"
 
-client = TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN)
+client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 redis_client = redis.from_url(os.environ.get("REDIS_URL"))
 
