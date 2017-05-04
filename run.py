@@ -47,35 +47,13 @@ def welcome():
     resp = VoiceResponse()
 
     # Gather digits.
-    with resp.gather(numDigits=1, action="/handle-key", method="POST") as g:
-        g.say("""Hello, thanks for calling SFSPCA's application.
-                 Press 1 to record your awesome story.
-                 Press any other key to start over.""", voice="alice")
+    with resp.gather(numDigits=1, action="/handle-key", method="POST") as gather:
+        gather.say("""Hello, thanks for calling SFSPCA's application.
+                      Press 1 to record your awesome story.
+                      Press any other key to start over.""", voice="alice")
+    # If the user doesn't select an option, redirect them into a loop
+    resp.redirect("/welcome")
     return twiml(resp)
-
-
-# @app.route('/menu', methods=['POST'])
-# def menu():
-#     selected_option = request.form['Digits']
-#     option_actions = {'1': _give_instructions}
-#     logger.info()
-#
-#     if option_actions.has_key(selected_option):
-#         response = VoiceResponse()
-#         option_actions[selected_option](response)
-#         return twiml(response)
-#
-#     return _redirect_welcome()
-#
-#
-# def _give_instructions(response):
-#     response.say("""Hello, thanks for calling SFSPCA's application.
-#                  Press 1 to record your awesome story.
-#                  Press any other key to start over.""", voice="alice")
-#
-#
-#     response.hangup()
-#     return response
 
 
 def _redirect_welcome():
