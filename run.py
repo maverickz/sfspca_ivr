@@ -47,32 +47,35 @@ def welcome():
     resp = VoiceResponse()
 
     # Gather digits.
-    with resp.gather(numDigits=1, action=url_for("menu"), method="POST") as g:
-        g.play(url="http://howtodocs.s3.amazonaws.com/et-phone.mp3", loop=3)
+    with resp.gather(numDigits=1, action=url_for("handle-key"), method="POST") as g:
+        g.say("""Hello, thanks for calling SFSPCA's application.
+                 Press 1 to record your awesome story.
+                 Press any other key to start over.""", voice="alice")
     return twiml(resp)
 
 
-@app.route('/menu', methods=['POST'])
-def menu():
-    selected_option = request.form['Digits']
-    option_actions = {'1': _give_instructions}
-
-    if option_actions.has_key(selected_option):
-        response = VoiceResponse()
-        option_actions[selected_option](response)
-        return twiml(response)
-
-    return _redirect_welcome()
-
-
-def _give_instructions(response):
-    response.say("""Hello, thanks for calling SFSPCA's application.
-                 Press 1 to record your awesome story.
-                 Press any other key to start over.""", voice="alice")
-
-
-    response.hangup()
-    return response
+# @app.route('/menu', methods=['POST'])
+# def menu():
+#     selected_option = request.form['Digits']
+#     option_actions = {'1': _give_instructions}
+#     logger.info()
+#
+#     if option_actions.has_key(selected_option):
+#         response = VoiceResponse()
+#         option_actions[selected_option](response)
+#         return twiml(response)
+#
+#     return _redirect_welcome()
+#
+#
+# def _give_instructions(response):
+#     response.say("""Hello, thanks for calling SFSPCA's application.
+#                  Press 1 to record your awesome story.
+#                  Press any other key to start over.""", voice="alice")
+#
+#
+#     response.hangup()
+#     return response
 
 
 def _redirect_welcome():
@@ -91,13 +94,14 @@ def handle_key():
     logger.info("Digit pressed: {}".format(digit_pressed))
     if digit_pressed == "1":
         resp = VoiceResponse()
-        resp.say("Record your story after the tone. Please keep your recording to under a minute. Once you have finished recording, you may hangup")
-        resp.record(maxLength="60", action="/handle-recording")
+        resp.say("""Record your story after the tone. Please keep your recording to under a minute.
+                    Once you have finished recording, you may hangup""")
+        resp.record(maxLength="60", action=url_for("handle-recording"))
         return str(resp)
 
     # If the caller pressed anything but 1, redirect them to the homepage.
     else:
-        return redirect("/")
+        return _redirect_welcome()
 
 
 @app.route("/handle-message", methods=['GET', 'POST'])
