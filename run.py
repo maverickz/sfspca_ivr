@@ -19,7 +19,6 @@ MYDIR = os.path.dirname(__file__)
 # Read account sid and auth token from environmental variables
 ACCOUNT_SID = os.getenv("ACCOUNT_SID", "")
 AUTH_TOKEN = os.getenv("AUTH_TOKEN", "")
-S3_BUCKET = "sfspca-ivr"
 
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
