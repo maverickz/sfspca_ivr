@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 
 from flask import Flask, request, redirect, Response
-from pprint import pprint
 from twilio.rest import Client
-from datetime import date, datetime
 from twilio.twiml.voice_response import VoiceResponse
-import twilio.twiml
 import json
-import csv
 import os
 import redis
 import sys
@@ -75,7 +71,7 @@ def handle_key():
         resp.record(maxLength="60", action="/handle-recording")
         return str(resp)
 
-    # If the caller pressed anything but 1, redirect them to the homepage.
+    # If the caller pressed anything but 1, redirect them to main menu
     else:
         return _redirect_welcome()
 
@@ -113,18 +109,25 @@ def save_media(from_number, recording_url=None, img_url=None):
     recordings_json = redis_client.get(str(from_number))
     recordings_obj = json.loads(recordings_json) if recordings_json else {"recordings": [], "images": []}
     if recording_url is not None:
+        logger.info("Recording saved for {}".format(from_number))
         recordings_obj["recordings"].append(recording_url)
     if img_url is not None:
+        logger.info("Image saved for {}".format(from_number))
         recordings_obj["images"].append(img_url)
     redis_client.set(str(from_number), json.dumps(recordings_obj))
-    logger.info("Media saved for {}".format(from_number))
 
 
 def send_confirmation_text(from_number):
     message = client.messages.create(to=str(from_number),
-                           from_="+14152003278",
-                           body="Thanks for sharing your story, please respond with a photo, if available")
+                                     from_="+14152003278",
+                                     body="Thanks for sharing your story, please respond with a photo, if available")
     logger.info("Message to {}, status: {}".format(from_number, message))
+
+
+@app.route("/get-stories", methods=['GET'])
+def get_stories():
+    for key in redis_client.scan_iter():
+        print key, redis_client.get(key)
 
 
 if __name__ == "__main__":
