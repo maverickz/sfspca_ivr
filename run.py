@@ -126,9 +126,11 @@ def send_confirmation_text(from_number):
 
 @app.route("/get-stories", methods=['GET'])
 def get_stories():
+    user_stories = {}
+    print redis_client.scan_iter()
     for key in redis_client.scan_iter():
-        print key, redis_client.get(key)
-
+        user_stories[key] = redis_client.get(key)
+    return user_stories
 
 if __name__ == "__main__":
     port = os.getenv("PORT", 8080)
