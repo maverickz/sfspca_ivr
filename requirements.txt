@@ -11,5 +11,5 @@ pytz==2016.6.1
 redis==2.10.5
 requests==2.10.0
 six==1.10.0
-twilio==5.4.0
+twilio==6.1.0
 wsgiref==0.1.2
