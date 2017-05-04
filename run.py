@@ -45,7 +45,6 @@ def twiml(resp):
 @app.route("/welcome", methods=['GET', 'POST'])
 def welcome():
     resp = VoiceResponse()
-    resp.say("Hello, thanks for calling SFSPCA's Twilio app", voice="alice")
 
     # Gather digits.
     with resp.gather(numDigits=1, action=url_for("menu"), method="POST") as g:
@@ -67,10 +66,10 @@ def menu():
 
 
 def _give_instructions(response):
-    response.say("""Press 1 to record your awesome story.
+    response.say("""Hello, thanks for calling SFSPCA's application.
+                 Press 1 to record your awesome story.
                  Press any other key to start over.""", voice="alice")
 
-    response.say("Hello, thanks for calling SFSPCA's application", voice="alice")
 
     response.hangup()
     return response
