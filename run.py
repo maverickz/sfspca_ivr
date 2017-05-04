@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, request, redirect, url_for, Response
+from flask import Flask, request, redirect, Response
 from pprint import pprint
 from twilio.rest import Client
 from datetime import date, datetime
@@ -47,7 +47,7 @@ def welcome():
     resp = VoiceResponse()
 
     # Gather digits.
-    with resp.gather(numDigits=1, action=url_for("handle-key"), method="POST") as g:
+    with resp.gather(numDigits=1, action="/handle-key", method="POST") as g:
         g.say("""Hello, thanks for calling SFSPCA's application.
                  Press 1 to record your awesome story.
                  Press any other key to start over.""", voice="alice")
@@ -81,9 +81,7 @@ def welcome():
 def _redirect_welcome():
     response = VoiceResponse()
     response.say("Returning to the main menu", voice="alice")
-    response.redirect(url_for("welcome"))
-
-    return twiml(response)
+    return redirect("/welcome")
 
 
 @app.route("/handle-key", methods=['GET', 'POST'])
@@ -96,7 +94,7 @@ def handle_key():
         resp = VoiceResponse()
         resp.say("""Record your story after the tone. Please keep your recording to under a minute.
                     Once you have finished recording, you may hangup""")
-        resp.record(maxLength="60", action=url_for("handle-recording"))
+        resp.record(maxLength="60", action="/handle-recording")
         return str(resp)
 
     # If the caller pressed anything but 1, redirect them to the homepage.
