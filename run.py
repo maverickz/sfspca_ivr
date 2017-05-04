@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, url_for, Response
 from pprint import pprint
 from twilio.rest import Client
 from datetime import date, datetime
@@ -36,20 +36,52 @@ logger.addHandler(ch)
 app = Flask(__name__)
 
 
-@app.route("/", methods=['GET', 'POST'])
-def greet_user():
+def twiml(resp):
+    resp = Response(str(resp))
+    resp.headers['Content-Type'] = 'text/xml'
+    return resp
+
+
+@app.route("/welcome", methods=['GET', 'POST'])
+def welcome():
     resp = VoiceResponse()
-    # Greet the caller by name
-    resp.say("Hello, thanks for calling SFSPCA's Twilio app")
-    # Play an mp3
-    # resp.play("http://demo.twilio.com/hellomonkey/monkey.mp3")
+    resp.say("Hello, thanks for calling SFSPCA's Twilio app", voice="alice")
 
     # Gather digits.
-    with resp.gather(numDigits=1, action="/handle-key", method="POST") as g:
-        g.say("""Press 1 to record your awesome story.
-                 Press any other key to start over.""")
+    with resp.gather(numDigits=1, action=url_for("menu"), method="POST") as g:
+        g.play(url="http://howtodocs.s3.amazonaws.com/et-phone.mp3", loop=3)
+    return twiml(resp)
 
-    return str(resp)
+
+@app.route('/menu', methods=['POST'])
+def menu():
+    selected_option = request.form['Digits']
+    option_actions = {'1': _give_instructions}
+
+    if option_actions.has_key(selected_option):
+        response = VoiceResponse()
+        option_actions[selected_option](response)
+        return twiml(response)
+
+    return _redirect_welcome()
+
+
+def _give_instructions(response):
+    response.say("""Press 1 to record your awesome story.
+                 Press any other key to start over.""", voice="alice")
+
+    response.say("Hello, thanks for calling SFSPCA's application", voice="alice")
+
+    response.hangup()
+    return response
+
+
+def _redirect_welcome():
+    response = VoiceResponse()
+    response.say("Returning to the main menu", voice="alice")
+    response.redirect(url_for("welcome"))
+
+    return twiml(response)
 
 
 @app.route("/handle-key", methods=['GET', 'POST'])
@@ -57,10 +89,10 @@ def handle_key():
     """Handle key press from a user."""
 
     digit_pressed = request.values.get('Digits', None)
-
+    logger.info("Digit pressed: {}".format(digit_pressed))
     if digit_pressed == "1":
         resp = VoiceResponse()
-        resp.say("Record your story after the tone. Please keep your recording to under a minute")
+        resp.say("Record your story after the tone. Please keep your recording to under a minute. Once you have finished recording, you may hangup")
         resp.record(maxLength="60", action="/handle-recording")
         return str(resp)
 
