@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, request, redirect, Response
+from flask import Flask, jsonify, request, redirect, Response
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse
 import json
@@ -127,10 +127,9 @@ def send_confirmation_text(from_number):
 @app.route("/get-stories", methods=['GET'])
 def get_stories():
     user_stories = {}
-    print redis_client.scan_iter()
     for key in redis_client.scan_iter():
         user_stories[key] = redis_client.get(key)
-    return user_stories
+    return jsonify(user_stories)
 
 if __name__ == "__main__":
     port = os.getenv("PORT", 8080)
