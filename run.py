@@ -71,7 +71,7 @@ def handle_key():
     if digit_pressed == "1":
         resp = VoiceResponse()
         resp.say("""Record your story after the tone. Please keep your recording to under a minute.
-                    Once you have finished recording, you may hangup""")
+                    Once you have finished recording, you may hangup""", voice="alice")
         resp.record(maxLength="60", action="/handle-recording")
         return str(resp)
 
@@ -88,7 +88,6 @@ def handle_message():
     img_url = request.values.get("MediaUrl0", None)
 
     save_media(from_number, img_url=img_url)
-    send_confirmation_text(from_number)
     if img_url is not None:
         resp = "Thanks for sharing the photo with us!"
     return resp
@@ -122,9 +121,10 @@ def save_media(from_number, recording_url=None, img_url=None):
 
 
 def send_confirmation_text(from_number):
-    client.messages.create(to=str(from_number),
+    message = client.messages.create(to=str(from_number),
                            from_="+14152003278",
                            body="Thanks for sharing your story, please respond with a photo, if available")
+    logger.info("Message to {}, status: {}".format(from_number, message))
 
 
 if __name__ == "__main__":
